@@ -1,0 +1,189 @@
+#! /usr/bin/python
+
+import os
+import re
+import sys
+import time
+from threading import Thread
+
+ALIVE = True  # SOFTWARE IS RUNNING
+SPEAKING_ALLOWED = True  # IS IT speaking
+BUFFER = None  # What is IT speaking?
+clear = ' '*80  # Clear string for common use
+valid = 'abcdefghijklmnopqrstuvwxyz'  # We support only english due to dependence on espeak
+valid += valid.upper()
+valid += '0123456789., ?!";'
+
+help_text = '''
+Book Reader based on Espeak
+===========================
+
+USAGE
+-----
+
+bkrd [TextFileName] [start_at_line]
+
+Control
+-------
+
+While the book is being read you can use the following keys to
+control the reader.
+
+<space> - to toggle pause and play. Current sentence will be completed
+          before pause or play.
+p       - print the text of the sentence currently being spoken
+s       - sentence number so that you can see how much is done.
+r       - remember this position and start from this the next time
+          this book is read. If a position is specified, that will
+          be used as a start point instead.
+q       - quit
+
+INFO
+----
+
+While reading some things are printed on screen. They are in the
+following format:
+
+[LINE_NO] [%DONE] [TRUNCATED_LINE_TEXT]
+
+
+Example
+-------
+
+`bkrd myfile.txt` reads the text in myfile.txt
+`bkrd myfile.txt 10` reads the text in myfile.txt starting at line 10
+`bkrd --help` displays this help and exits 
+
+Files Generated
+---------------
+BKRD generates one file in your home folder called `.bkrd`
+
+This is the file used to keep track of last read positions
+in the books you read.
+
+For example in my laptop, it is the file `/home/arjoonn/.bkrd`
+'''
+
+
+
+# See what is to be done
+book = sys.argv[1]
+CURRENT_BOOK = book
+
+if book.strip() == '--help':
+    print(help_text)
+    sys.exit(0)
+
+try:
+    CURRENT = int(sys.argv[2])  # CURRENT LOCATION given?
+except IndexError:
+    filename = os.path.join(os.environ['HOME'], '.bkrd')
+    try:
+        with open(filename, 'r') as fl:
+            old = fl.read()
+        old = eval(old)  #TODO: Risky to call eval, need to change to JSON or YAML
+        CURRENT = old[CURRENT_BOOK]
+    except (FileNotFoundError, KeyError):
+        CURRENT = 0
+
+
+def getch():
+    "For getting a single character from the terminal since input waits for the Return key"
+    import termios
+    import tty
+    def _getch():
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+    return _getch
+
+def listen():
+    "Listen for keystrokes which dictate control"
+    global CURRENT, ALIVE, SPEAKING_ALLOWED, clear, CURRENT_BOOK
+    get = getch()
+    while ALIVE:
+        char = get()
+        if char == ' ':
+            SPEAKING_ALLOWED = not SPEAKING_ALLOWED
+            print(clear, end='\r')
+            print(">" if SPEAKING_ALLOWED else "||", end='\r')
+        if char == 's':
+            print(clear, end='\r')
+            print(CURRENT)
+        if char == 'q':
+            print(clear, end='\r')
+            print(CURRENT)
+            remember(CURRENT_BOOK, CURRENT)
+            ALIVE = False
+        if char == 'p':
+            print(clear, end='\r')
+            print(BUFFER)
+        if char == 'r':
+            print(clear, end='\r')
+            remember(CURRENT_BOOK, CURRENT)
+    print('Waiting for sentence to complete')
+
+
+def remember(book_name, line_no):
+    "Put the current position of reading this book in memory for later recollection"
+    filename = os.path.join(os.environ['HOME'], '.bkrd')
+    try:
+        with open(filename, 'r') as fl:
+            old = fl.read()
+        old = eval(old)
+    except FileNotFoundError:
+        old = {}
+    old[book_name] = line_no
+    with open(filename, 'w') as fl:
+        fl.write(str(old))
+
+
+
+
+
+def read():
+    """
+    Start reading a book
+    """
+    global CURRENT, ALIVE, SPEAKING_ALLOWED, valid, BUFFER, clear, CURRENT_BOOK
+    with open(book, 'r') as fl:
+        whole_book = fl.read()
+        to_speak = re.split('\.|\!|\?',whole_book)  # TODO: Probably needs a better regex
+        total_length = float(len(to_speak))
+
+        for count, raw_line in enumerate(to_speak):
+            # Check for flags
+            if not ALIVE:
+                break
+            if count < CURRENT:
+                continue
+            # Clean up non valid things in the line
+            line = ''.join((i for i in raw_line.strip() if i in valid))
+            if line.strip() != '':
+                CURRENT = count
+
+                # Wait for the permission to speak
+                while not SPEAKING_ALLOWED:
+                    time.sleep(0.2)
+
+                BUFFER = line
+                command = "echo '{}'|espeak --stdin".format(line)
+                print(CURRENT,  # Current line number
+                      round(CURRENT / total_length, 2), '%',  # % complete
+                      line[:70], ' ...',  # Truncated text in this line
+                      end='\r')  # to keep to the same line
+                # TODO: Might cause problems on windows, look for better ways
+                os.system(command)  # USE ESPEAK TO SPEAK
+                print(clear, end='\r')
+    print('Closed the book')
+
+
+t = Thread(target=listen)
+t.start()
+read()
