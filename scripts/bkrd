@@ -173,7 +173,7 @@ def read():
                     time.sleep(0.2)
 
                 BUFFER = line
-                command = "echo '{}'|espeak --stdin".format(line)
+                command = "echo '{}'|espeak --stdin &> /dev/null".format(line)
                 print(CURRENT,  # Current line number
                       round(CURRENT / total_length, 2), '%',  # % complete
                       line[:70], ' ...',  # Truncated text in this line
