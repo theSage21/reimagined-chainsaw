@@ -47,9 +47,9 @@ stories = re.compile(r'span class="titletext">(.*?)</span>.*?div class="esc-lead
 
 print(len(stories), 'stories obtained')
 get = getch()
-for story in stories:
+for index, story in enumerate(stories):
     title, body = story
-    print(HEAD, unescape(title), ENDC)
+    print(HEAD, '{}:'.format(index), unescape(title), ENDC)
     body = unescape(body)
     while len(body) > 0:
         print('  ', body[:80])
