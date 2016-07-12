@@ -8,8 +8,9 @@ Github suggested the name and I went with it.
 Available
 ---------
 
-- GoogleNews
-- Bookread
+- GoogleNews: `gn`
+- Bookread: `bkrd`
+- MemGame: `memgame`
 
 
 Usage

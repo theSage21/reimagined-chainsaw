@@ -1,0 +1,65 @@
+#! /usr/bin/python
+import sys
+import random
+import time
+
+def generate(n):
+    "Generate a random number with N digits"
+    nos = '1234567890'
+    digits = [random.choice(nos) for _ in range(n)]
+    return ''.join(digits)
+
+def increment(n):
+    "Cyclic increment each digit by one and return"
+    digits = list(map(int, list(n.strip())))
+    incremented = [((i + 1) % 10) for i in digits]
+    new_number = ''.join(list(map(str, incremented)))
+    return new_number
+
+
+def score(time_dicts):
+    print('Current scores')
+    print('*'*10)
+    for key, value in time_dicts.items():
+        avg = sum(value) / len(value)
+        print(key, avg)
+
+def run_game(n, samples_per_run=10):
+    "Run the game with n digit numbers"
+    time_taken = {}
+    print('Running with n=', n)
+    while True:
+        time_taken[n] = []
+        for run in range(samples_per_run):
+            no = generate(n)
+            start = time.time()
+            print(no)
+            answer = input().strip()
+            if answer == 'q':
+                score(time_taken)
+                sys.exit(0)
+            end = time.time()
+            inc_no = increment(no)
+            print(inc_no, inc_no == answer, end - start, 'Run complete: ', run)
+            time_taken[n].append(end - start)
+        score(time_taken)
+        n += 1
+        print('Stepping up the game, n =', n)
+
+# How many digits
+if __name__ == '__main__':
+    help_message = '''
+    memgame [number_of_digits]
+
+    Increment each digit by one in a cyclic fashion.
+    Type q to quit.
+    '''
+    if len(sys.argv) > 1:
+        if sys.argv[1] in ['-h', '--help']:
+            print(help_message)
+            sys.exit(0)
+        elif sys.argv[1].isdigit():
+            digits = int(sys.argv[1])
+    else:
+        digits = 4
+    run_game(digits)
