@@ -34,6 +34,7 @@ np.random.seed(1)
 
 import pandas as pd
 from tqdm import tqdm
+from mlpr import report, pr
 
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -44,8 +45,21 @@ from sklearn.preprocessing import (Imputer, MinMaxScaler,
     StandardScaler)
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import GridSearchCV
+ -----------------------------------------------------------------------------
 
-INDENT = 0
+@report
+def load_db():
+    raise Exception('Not implemented')
+    train, test = None, None
+    return train, test
+
+# -----------------------------------------------------------------------------
+if __name__ == '__main__':
+    df, ts = load_db()
+" > scripts/main.py
+# TEMPLATE DONE
+
+echo "INDENT = 0
 def pr(*args, **kwargs):  # print substitute
     'A reported call tree aware print function'
     pre = '|' + ('-' * INDENT) + '| '
@@ -68,19 +82,7 @@ def report(fn):
                 'In {}{}{} seconds'.format(B, end - start, CLR))
         return results
     return new_fn
-# -----------------------------------------------------------------------------
-
-@report
-def load_db():
-    raise Exception('Not implemented')
-    train, test = None, None
-    return train, test
-
-# -----------------------------------------------------------------------------
-if __name__ == '__main__':
-    df, ts = load_db()
-" > scripts/main.py
-# TEMPLATE DONE
+" > scripts/mlpr.py
 
 echo "Creating environment"
 virtualenv -p python3 env
