@@ -11,6 +11,7 @@ Available
 - GoogleNews: `gn`
 - Bookread: `bkrd`
 - MemGame: `memgame`
+- Machine Learning-Project: `mlpr`
 
 
 Usage
