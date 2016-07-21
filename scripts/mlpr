@@ -25,24 +25,33 @@ mkdir data scripts
 
 echo "Making default scripts"
 
-echo "
-import pandas as pd
+echo "__project__ = $project
+__author__ = $author
+
 import numpy as np
+np.random.seed(1)
+
+import pandas as pd
 from tqdm import tqdm
-
 from sklearn.pipeline import Pipeline
-
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Ridge
-
 from sklearn.preprocessing import Imputer, MinMaxScaler, RobustScaler, PolynomialFeatures
-
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import GridSearchCV
+
+def report(fn):
+    def new_fn(*args, **kwargs):
+        print('> starting ', fn.__name__)
+        results = fn(*args, **kwargs)
+        print('> complete ', fn.__name__)
+        return results
+    return new_fn
 " > scripts/main.py
 
 echo "Creating environment"
 virtualenv -p python3 env
 source env/bin/activate
-pip install numpy scipy sklearn pandas tqdm
+pip install numpy scipy sklearn pandas tqdm matplotlib pillow seaborn
+pip freeze > requirements.txt
 echo "Complete"
