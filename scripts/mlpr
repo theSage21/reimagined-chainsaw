@@ -59,7 +59,10 @@ if __name__ == '__main__':
 " > scripts/main.py
 # TEMPLATE DONE
 
-echo "INDENT = 0
+echo "import pickle
+from functools import wraps
+
+INDENT = 0
 def pr(*args, **kwargs):  # print substitute
     'A reported call tree aware print function'
     pre = '|' + ('-' * INDENT) + '| '
@@ -80,7 +83,41 @@ def report(fn):
         INDENT, end = INDENT - 2, time.time()
         print(G, '> complete ', CLR, fn.__name__,
                 'In {}{}{} seconds'.format(B, end - start, CLR))
+        print('')
         return results
+    return new_fn
+
+def cache(fn):
+    '''
+    save results of this function to file for future caching
+    Kwargs are not counted in function signature
+    '''
+    root = '../cache/'
+
+    @wraps(fn)
+    def new_fn(*args, **kwargs):
+        name, key = fn.__name__, (fn.__name__, args)
+        # Try to read index. Assume does not exist otherwise
+        try:
+            cache = pickle.load(open(root + 'index', 'rb'))
+        except:
+            cache = {}
+        #Check cache for answers
+        if key in cache.keys():
+            pr('Found cached. Name: ', cache[key])
+            with open(root + cache[key], 'rb') as fl:
+                result = pickle.load(fl)
+        else:
+            pr('Calculating. Not found in cache...')
+            result = fn(*args, **kwargs)  # Calculate
+            new_result_name = str(max([int(i) for i in cache.values()] + [0]) + 1)
+            with open(root + new_result_name, 'wb') as fl:
+                pickle.dump(result, fl)  # Save results
+            with open(root + 'index', 'wb') as fl:
+                cache[key] = new_result_name
+                pickle.dump(cache, fl)  # update cache index
+            pr('Saved to cache for future runs. Name: ', new_result_name)
+        return result
     return new_fn
 " > scripts/mlpr.py
 
