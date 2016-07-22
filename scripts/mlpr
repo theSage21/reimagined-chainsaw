@@ -21,7 +21,7 @@ Notes
 
 
 echo "Making directories for working"
-mkdir data scripts
+mkdir data scripts cache
 
 echo "Making default scripts"
 
@@ -34,7 +34,7 @@ np.random.seed(1)
 
 import pandas as pd
 from tqdm import tqdm
-from mlpr import report, pr
+from mlpr import report, cache
 
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -45,7 +45,7 @@ from sklearn.preprocessing import (Imputer, MinMaxScaler,
     StandardScaler)
 from sklearn.cross_validation import cross_val_score
 from sklearn.grid_search import GridSearchCV
- -----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 @report
 def load_db():
@@ -59,28 +59,24 @@ if __name__ == '__main__':
 " > scripts/main.py
 # TEMPLATE DONE
 
-echo "import pickle
+echo "import os
+import pickle
 from functools import wraps
-
-INDENT = 0
-def pr(*args, **kwargs):  # print substitute
-    'A reported call tree aware print function'
-    pre = '|' + ('-' * INDENT) + '| '
-    print(pre, *args, **kwargs)
+from hashlib import md5
+__all__ = ['report', 'cache']
 
 def report(fn):
     'report the beginning and ending of this functions calls.'
     B, G, R, CLR = '\033[94m', '\033[92m','\033[91m', '\033[0m'
     import time
     def new_fn(*args, **kwargs):
-        global INDENT
-        INDENT, start = INDENT + 2, time.time()
+        doc, start = fn.__doc__ or fn.__name__, time.time()
         print(R, '> starting ', CLR, fn.__name__,
-            '{}...'.format(fn.__doc__[:20]))
+            '{}...'.format(doc[:20]))
 
         results = fn(*args, **kwargs)
 
-        INDENT, end = INDENT - 2, time.time()
+        end = time.time()
         print(G, '> complete ', CLR, fn.__name__,
                 'In {}{}{} seconds'.format(B, end - start, CLR))
         print('')
@@ -93,30 +89,23 @@ def cache(fn):
     Kwargs are not counted in function signature
     '''
     root = '../cache/'
+    if not os.path.exists(root):
+        os.system('mkdir '+ root)
 
     @wraps(fn)
     def new_fn(*args, **kwargs):
-        name, key = fn.__name__, (fn.__name__, args)
-        # Try to read index. Assume does not exist otherwise
-        try:
-            cache = pickle.load(open(root + 'index', 'rb'))
-        except:
-            cache = {}
-        #Check cache for answers
-        if key in cache.keys():
-            pr('Found cached. Name: ', cache[key])
-            with open(root + cache[key], 'rb') as fl:
+        name, string = fn.__name__, (fn.__name__, args)
+        key = md5(string.__str__().encode()).hexdigest()
+        if os.path.exists(root + key):
+            print('Found cached. Name: ', key)
+            with open(root + key, 'rb') as fl:
                 result = pickle.load(fl)
         else:
-            pr('Calculating. Not found in cache...')
+            print('Calculating. Not found in cache...')
             result = fn(*args, **kwargs)  # Calculate
-            new_result_name = str(max([int(i) for i in cache.values()] + [0]) + 1)
-            with open(root + new_result_name, 'wb') as fl:
+            with open(root + key, 'wb') as fl:
                 pickle.dump(result, fl)  # Save results
-            with open(root + 'index', 'wb') as fl:
-                cache[key] = new_result_name
-                pickle.dump(cache, fl)  # update cache index
-            pr('Saved to cache for future runs. Name: ', new_result_name)
+            print('Saved to cache for future runs. Name: ', key)
         return result
     return new_fn
 " > scripts/mlpr.py
