@@ -1,8 +1,23 @@
 #! /bin/bash
+echo  -e "
+\033[92m
+MachineLearningPRoject
+\033[0m
+MLPR is a Machine Learning Project helper script
+which creates a project directory to help you out.
 
-echo "Name of the Project: "
+It does the following:
+- make data, cache, script directories
+- create a scripts/mlpr.py helper script along with a scripts/main.py
+- create a README.md for note taking purposes, adding you
+  as author and the timestamping the project start date-time
+- Create a python3 virtualenv and attempt to install commonly used
+  ML libraries in it.
+"
+
+echo -e "\033[92mName of Project:\033[0m"
 read -r project
-echo "Your name: "
+echo -e "\033[92mAuthor Name:\033[0m"
 read -r author
 
 echo "Making the project directories"
