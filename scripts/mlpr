@@ -1,4 +1,5 @@
 #! /bin/bash
+export VERSION='0.1'
 echo  -e "
 \033[92m
 MachineLearningPRoject
@@ -26,10 +27,16 @@ cd $project
 
 echo "Making README files"
 echo "
+Meta
+====
 $project
-========
 $author
 $(date)
+mlpr version = $VERSION
+
+- data: for raw data files
+- cache: used by @cache to cache expensive functions
+- scripts: holds all scripts. To be used as PWD
 
 Notes
 -----"  >> README.md
@@ -41,15 +48,20 @@ mkdir data scripts cache
 echo "Making default scripts"
 
 # DEFAULT PROJECT TEMPLATE
-echo "__project__ = '$project'
-__author__ = '$author'
+echo "$project
+$author
+# $(date)
 
 import numpy as np
 np.random.seed(1)
 
 import pandas as pd
 from tqdm import tqdm
+# see https://github.com/theSage21/reimagined-chainsaw
+# mlpr.__version__ = $VERSION
 from mlpr import report, cache
+ 
+import xgboost as xgb
 
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -65,13 +77,32 @@ from sklearn.grid_search import GridSearchCV
 @report
 def load_db():
     raise Exception('Not implemented')
-    train, test = None, None
-    return train, test
+
+@report
+@cache
+def process_data(df):
+    return df
+
+@report
+def make_pipe():
+    return None
+
+@report
+def cross_validate(df, pipe):
+    return None
+
+@report
+def make_submission(pipe):
+    return None
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    df, ts = load_db()
-" > scripts/main.py
+    df = load_db()
+    df = process_data(df)
+    pipe = make_pipe()
+    cross_validate(df, pipe)
+    make_submission(pipe)
+# -----------------------------------------------------------------------------" > scripts/main.py
 # TEMPLATE DONE
 
 echo "import os
@@ -79,6 +110,7 @@ import pickle
 from functools import wraps
 from hashlib import md5
 __all__ = ['report', 'cache']
+__version__ = $VERSION
 
 def report(fn):
     'report the beginning and ending of this functions calls.'
@@ -128,6 +160,6 @@ def cache(fn):
 echo "Creating environment"
 virtualenv -p python3 env
 source env/bin/activate
-pip install numpy scipy sklearn pandas tqdm matplotlib pillow seaborn
+pip install numpy scipy sklearn pandas tqdm matplotlib pillow seaborn xgboost
 pip freeze > requirements.txt
 echo "Complete"
