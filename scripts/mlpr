@@ -1,5 +1,5 @@
 #! /bin/bash
-export VERSION='0.1'
+export VERSION='0.1.1'
 echo  -e "
 \033[92m
 MachineLearningPRoject
@@ -48,8 +48,8 @@ mkdir data scripts cache
 echo "Making default scripts"
 
 # DEFAULT PROJECT TEMPLATE
-echo "$project
-$author
+echo "# $project
+# $author
 # $(date)
 
 import numpy as np
