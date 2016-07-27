@@ -32,7 +32,7 @@ Meta
 $project
 $author
 $(date)
-mlpr version = $VERSION
+mlpr version = '$VERSION'
 
 - data: for raw data files
 - cache: used by @cache to cache expensive functions
@@ -110,7 +110,7 @@ import pickle
 from functools import wraps
 from hashlib import md5
 __all__ = ['report', 'cache']
-__version__ = $VERSION
+__version__ = '$VERSION'
 
 def report(fn):
     'report the beginning and ending of this functions calls.'
