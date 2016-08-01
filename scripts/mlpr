@@ -1,5 +1,5 @@
 #! /bin/bash
-export VERSION='0.1.1'
+export VERSION='0.1.2'
 echo  -e "
 \033[92m
 MachineLearningPRoject
@@ -61,22 +61,25 @@ from tqdm import tqdm
 # mlpr.__version__ = $VERSION
 from mlpr import report, cache
  
-import xgboost as xgb
+#import xgboost as xgb
 
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.preprocessing import (Imputer, MinMaxScaler,
-    RobustScaler, PolynomialFeatures,
-    LabelEncoder, OneHotEncoder,
-    StandardScaler)
-from sklearn.cross_validation import cross_val_score
-from sklearn.grid_search import GridSearchCV
+#from fancyimpute import BiScaler, KNN, NuclearNormMinimization, SoftImpute
+#from sklearn.pipeline import Pipeline, FeatureUnion
+#from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+#from sklearn.linear_model import LinearRegression, Ridge
+#from sklearn.preprocessing import (Imputer, MinMaxScaler,
+#    RobustScaler, PolynomialFeatures,
+#    LabelEncoder, OneHotEncoder,
+#    StandardScaler)
+#from sklearn.cross_validation import cross_val_score
+#from sklearn.grid_search import GridSearchCV
+#from sklearn.decomposition import PCA
 # -----------------------------------------------------------------------------
 
 @report
 def load_db():
-    raise Exception('Not implemented')
+    df = pd.read_csv('../data/train.csv')
+    return df
 
 @report
 @cache
@@ -85,22 +88,41 @@ def process_data(df):
 
 @report
 def make_pipe():
-    return None
+    rf = RandomForestClassifier(n_jobs=-1, n_estimators=30)
+    return rf
 
 @report
 def cross_validate(df, pipe):
-    return None
+    # TODO: scoring
+    scores = cross_val_score(pipe, x, y, scoring='accuracy', cv=10)
+    return scores
+
+@report
+@cache
+def test_data_processing(ts):
+    "Processing specific to test data"
+    return ts
 
 @report
 def make_submission(pipe):
-    return None
+    ts = pd.read_csv('../data/test.csv')
+    pts = process_data(ts)
+    pts = test_data_processing(pts)
+    predictions = pipe.predict(pts)
+    #  TODO
+    pd.DataFrame({}
+    )[[]
+    ].to_csv('../submission.csv', index=False)
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
     df = load_db()
     df = process_data(df)
     pipe = make_pipe()
-    cross_validate(df, pipe)
+    scores = cross_validate(df, pipe)
+    print(scores.mean(), scores.std(), scores)
+    x, y = df.drop('', axis=1), df['']  # TODO
+    pipe.fit(x, y)
     make_submission(pipe)
 # -----------------------------------------------------------------------------" > scripts/main.py
 # TEMPLATE DONE
@@ -111,6 +133,7 @@ from functools import wraps
 from hashlib import md5
 __all__ = ['report', 'cache']
 __version__ = '$VERSION'
+LEVEL = 0
 
 def report(fn):
     'report the beginning and ending of this functions calls.'
@@ -118,15 +141,19 @@ def report(fn):
     import time
     def new_fn(*args, **kwargs):
         doc, start = fn.__doc__ or fn.__name__, time.time()
-        print(R, '> starting ', CLR, fn.__name__,
+        global LEVEL
+        LEVEL += 1
+        pre = str(LEVEL) + ('>' * LEVEL)
+        print(R, pre, 'starting ', CLR, fn.__name__,
             '{}...'.format(doc[:20]))
 
         results = fn(*args, **kwargs)
 
         end = time.time()
-        print(G, '> complete ', CLR, fn.__name__,
+        print(G, pre, 'complete ', CLR, fn.__name__,
                 'In {}{}{} seconds'.format(B, end - start, CLR))
         print('')
+        LEVEL -= 1
         return results
     return new_fn
 
@@ -160,6 +187,6 @@ def cache(fn):
 echo "Creating environment"
 virtualenv -p python3 env
 source env/bin/activate
-pip install numpy scipy sklearn pandas tqdm matplotlib pillow seaborn xgboost
+pip install numpy scipy sklearn pandas tqdm matplotlib pillow seaborn xgboost fancyimpute
 pip freeze > requirements.txt
 echo "Complete"

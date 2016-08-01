@@ -8,10 +8,10 @@ Github suggested the name and I went with it.
 Available
 ---------
 
-- GoogleNews: `gn`
-- Bookread: `bkrd`
-- MemGame: `memgame`
-- Machine Learning-Project: `mlpr`
+- GoogleNews: `gn`, get's the front page of google news and presents the stories.
+- Bookread: `bkrd`, audio book readin manager
+- MemGame: `memgame`, a difficult memory game
+- Machine Learning-Project: `mlpr`, set up basic structures and utils for ML projects
 
 
 Usage
