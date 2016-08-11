@@ -47,6 +47,9 @@ class DB:
 
 
 if __name__ == '__main__':
+    print('Usage:')
+    print('revision <name_of_database>')
+    print('-'*10)
     name = sys.argv[1] if (len(sys.argv) > 1) else 'notes'
     d = DB(name)
     try:
