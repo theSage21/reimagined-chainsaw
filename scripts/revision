@@ -1,0 +1,63 @@
+#! /usr/bin/python
+import os
+import sys
+import datetime
+import json
+
+
+def now():
+    diff = datetime.datetime.now() - datetime.datetime(1970,1,1)
+    return diff.days
+
+class DB:
+    def __init__(self, name):
+        self.name = '.' + name
+        self.db = None
+        self.load()
+        self.intervals = [1, 2, 5, 13, 35, 95]
+
+    def load(self):
+        try:
+            with open(os.path.join(os.environ['HOME'], name), 'rb') as fl:
+                temp = json.load(fl)
+                self.db = {int(i):v for i, v in temp}
+        except:
+            self.db = {}
+
+    def save(self):
+        try:
+            with open(os.path.join(os.environ['HOME'], name), 'wb') as fl:
+                json.dump(self.db, fl)
+        except:
+            pass
+
+    def add_topic(self, filepath):
+        today = now()
+        self.db[today] = filepath
+        self.save()
+
+    def revise(self):
+        today = now()
+        to_revise = []
+        for day, filepath in self.db.items():
+            diff = today - day
+            if diff in self.intervals:
+                to_revise.append(filepath)
+        return to_revise
+
+
+if __name__ == '__main__':
+    name = sys.argv[1] if (len(sys.argv) > 1) else 'notes'
+    d = DB(name)
+    try:
+        while True:
+            action = input(
+                    "(A)dd a new note.\n(R)evise previous notes.\nEnter:")
+            if action in ['a', 'A']:
+                path = input("Enter filepath: ")
+                d.add_topic(path)
+            elif action in ['r', 'R']:
+                for filepaths in d.revise():
+                    print(filepaths)
+    except KeyboardInterrupt:
+        print('Ending revision')
