@@ -1,5 +1,5 @@
 #! /bin/bash
-export VERSION='0.1.2'
+export VERSION='0.1.3'
 echo  -e "
 \033[92m
 MachineLearningPRoject
@@ -187,6 +187,6 @@ def cache(fn):
 echo "Creating environment"
 virtualenv -p python3 env
 source env/bin/activate
-pip install numpy scipy sklearn pandas tqdm matplotlib pillow seaborn xgboost fancyimpute
+pip install numpy scipy sklearn pandas tqdm matplotlib pillow seaborn xgboost
 pip freeze > requirements.txt
 echo "Complete"
