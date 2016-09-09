@@ -1,0 +1,47 @@
+from urllib.request import urlopen
+import datetime
+import time
+import sys
+import os
+
+assert sys.version_info >= (3, 0), "Python 3.x is required to run this"
+
+usage = 'Usage: $ python webcheck.py <urlfile> <interval>'
+print(usage)
+
+try:
+    urlfile, interval = sys.argv[1], int(sys.argv[2])
+except IndexError:
+    print('Incorrect usage')
+    print(usage)
+    sys.exit(1)
+
+
+def get(x):
+    "Get the page and read it"
+    page = urlopen(x)
+    text = str(page.read())
+    return text
+
+
+
+#get urls
+with open(urlfile, 'r') as fl:
+    urls = [i.strip() for i in fl.readlines()]
+
+# make reference pages
+references = [get(i) for i in urls]
+
+# start checking
+while True:
+    try:
+        new_pages = [get(i) for i in urls]
+    except:
+        time.sleep(interval / 10)
+        continue
+    changes = [r.strip() != n.strip() for r, n in zip(references, new_pages)]
+    for page, change in zip(urls, changes):
+        if change:
+            print(page, 'appears to have changed. Please check')
+    print('-'*10, 'Last check was {}'.format(datetime.datetime.now()))
+    time.sleep(interval)

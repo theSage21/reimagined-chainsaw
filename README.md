@@ -12,6 +12,7 @@ Available
 - Bookread: `bkrd`, audio book readin manager
 - MemGame: `memgame`, a difficult memory game
 - Machine Learning-Project: `mlpr`, set up basic structures and utils for ML projects
+- WebCheck: `webcheck` keeps a watch on websites and notifies you when they change
 
 
 Usage
