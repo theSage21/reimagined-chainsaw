@@ -1,3 +1,4 @@
+#! /usr/bin/python
 from urllib.request import urlopen
 import datetime
 import time
@@ -6,8 +7,7 @@ import os
 
 assert sys.version_info >= (3, 0), "Python 3.x is required to run this"
 
-usage = 'Usage: $ python webcheck.py <urlfile> <interval>'
-print(usage)
+usage = 'Usage: $ webcheck <urlfile> <check interval>'
 
 try:
     urlfile, interval = sys.argv[1], int(sys.argv[2])
