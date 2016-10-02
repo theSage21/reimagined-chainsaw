@@ -1,5 +1,5 @@
 #! /bin/bash
-export VERSION='0.1.4'
+export VERSION='0.1.5'
 echo  -e "
 \033[92m
 MachineLearningPRoject
@@ -135,6 +135,11 @@ __all__ = ['report', 'cache']
 __version__ = '$VERSION'
 LEVEL = 0
 
+def clear_cache():
+    'Used to clear all cache'
+    # TODO
+    
+
 def report(fn):
     'report the beginning and ending of this functions calls.'
     B, G, R, CLR = '\033[94m', '\033[92m','\033[91m', '\033[0m'
@@ -187,6 +192,8 @@ def cache(fn):
 echo "Creating environment"
 virtualenv -p python3 env
 source env/bin/activate
+# We do this to install all that we can and not fail alltogether
+# on a pip install -r req.txt
 pip install numpy 
 pip install scipy 
 pip install sklearn 

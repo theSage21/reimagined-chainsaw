@@ -1,0 +1,28 @@
+#! /usr/bin/python
+import time
+import sys
+import json
+import os
+
+assert sys.version_info >= (3, 0), "Python 3.x is required to run this"
+
+usage = 'Usage: $ breaks [alert command]'
+
+
+config_path = os.path.join(os.environ['HOME'], '.config', 'breaks.json')
+try:
+    with open(config_path, 'r') as fl:
+        config = json.load(fl)
+except FileNotFoundError:
+    config = {'interval': 20*60, 'alert_command': "notify-send --urgency=critical 'BREAK' 'take a break'"}
+    with open(config_path, 'w') as fl:
+        json.dump(config, fl)
+
+try:
+    alert_command = sys.argv[1]
+except IndexError:
+    alert_command = config['alert_command']
+
+while True:
+    time.sleep(config['interval'])
+    os.system(alert_command)
