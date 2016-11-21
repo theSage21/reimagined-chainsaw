@@ -14,6 +14,7 @@ Available
 - Machine Learning-Project: `mlpr`, set up basic structures and utils for ML projects
 - WebCheck: `webcheck` keeps a watch on websites and notifies you when they change as compared to when it was started.
 - Breaks: `breaks` reminds you to take breaks every N seconds
+- ScreenWatch: `screenwatch` keeps recording snapshots of your screen regularly.
 
 
 Usage

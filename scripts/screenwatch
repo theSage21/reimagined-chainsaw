@@ -1,0 +1,31 @@
+#! /usr/bin/python
+import time
+import sys
+import os
+
+assert sys.version_info >= (3, 0), "Python 3.x is required to run this"
+
+usage = 'Usage: $ screenwatch [screencapture command] [capture interval] [storage_prefix]'
+
+
+try:
+    alert_command = sys.argv[1]
+except IndexError:
+    alert_command = "gnome-screenshot -w -f {}{}.png"
+
+try:
+    interval = float(sys.argv[2])
+except IndexError:
+    interval = 60 * 2 # 60 seconds * 2
+
+try:
+    store_prefix = sys.argv[3]
+except IndexError:
+    store_prefix = '~/Pictures/screenwatch/'
+
+if not os.path.exists(store_prefix):
+    print("Creating store prefix")
+    os.system('mkdir {}'.format(store_prefix))
+while True:
+    time.sleep(interval)
+    os.system(alert_command.format(store_prefix, time.time()))
